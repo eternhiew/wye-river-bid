@@ -203,26 +203,30 @@
         }
 
         .reset-btn {
-            background: white;
-            border: 1px solid #e5e7eb;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.4);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 50%;
             cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-sans);
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .reset-btn span {
+            display: none;
         }
 
         .reset-btn:hover {
-            color: var(--text-main);
-            border-color: #d1d5db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
         }
 
         .room-cards {
@@ -558,13 +562,7 @@
                 <h2>Market Floor</h2>
                 <p>Bids adjust dynamically to maintain a <strong>$744.00</strong> total.</p>
             </div>
-            <button id="reset-btn" class="reset-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="1 4 1 10 7 10"></polyline>
-                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                </svg>
-                RESET SPLITS
-            </button>
+
         </div>
 
         <div class="room-cards" id="room-cards">
@@ -597,6 +595,13 @@
         </div>
         
         <div class="footer-note">CONSENSUS LOGIC ONLINE</div>
+
+        <button id="reset-btn" class="reset-btn" title="Reset to Equal Splits">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+        </button>
     </main>
 
     <!-- Firebase App (the core Firebase SDK) -->
@@ -751,11 +756,16 @@
         }
 
         function resetSplits() {
-            if (db) {
-                db.ref('rooms').set(INITIAL_ROOMS);
-            } else {
-                rooms = JSON.parse(JSON.stringify(INITIAL_ROOMS));
-                renderRooms();
+            const passcode = window.prompt("Enter reset code:");
+            if (passcode === "888") {
+                if (db) {
+                    db.ref('rooms').set(INITIAL_ROOMS);
+                } else {
+                    rooms = JSON.parse(JSON.stringify(INITIAL_ROOMS));
+                    renderRooms();
+                }
+            } else if (passcode !== null) {
+                alert("Incorrect reset code.");
             }
         }
 
