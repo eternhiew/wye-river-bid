@@ -576,7 +576,35 @@
         <div class="footer-note">CONSENSUS LOGIC ONLINE</div>
     </main>
 
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <script>
+        // ==========================================
+        // 1. ADD YOUR FIREBASE CONFIGURATION HERE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaBP68dfuaw1PEy_m829BeItticS_D5Lc",
+            authDomain: "wye-river-bid.firebaseapp.com",
+            databaseURL: "https://wye-river-bid-default-rtdb.firebaseio.com",
+            projectId: "wye-river-bid",
+            storageBucket: "wye-river-bid.firebasestorage.app",
+            messagingSenderId: "1030353929336",
+            appId: "1:1030353929336:web:db17977030f80a96afd98d",
+            measurementId: "G-RCBF1D1CT4"
+        };
+
+        // Initialize Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (error) {
+            console.error("Firebase not configured correctly yet. Please update firebaseConfig.");
+        }
+
         const TOTAL_BUDGET = 744.00;
         const INITIAL_ROOMS = [
             { id: 'main', name: 'Main bedroom - queen bed with ensuite', price: 248.00, lastUpdatedBy: 'NONE' },
@@ -585,6 +613,7 @@
         ];
 
         let rooms = JSON.parse(JSON.stringify(INITIAL_ROOMS));
+        let uiInitialized = false;
 
         function formatCurrency(amount) {
             return '$' + amount.toFixed(2);
@@ -597,39 +626,65 @@
         };
 
         function renderRooms() {
+            if (!rooms) return;
             const container = document.getElementById('room-cards');
-            container.innerHTML = '';
 
+            // 1. Initialize DOM structure if it hasn't been created yet
+            if (!uiInitialized) {
+                container.innerHTML = '';
+                rooms.forEach((room, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'room-card';
+                    card.innerHTML = `
+                        <div class="room-icon">
+                            ${roomIcons[room.id]}
+                        </div>
+                        <div class="room-name">${room.name}</div>
+                        
+                        <div>
+                            <div class="price-label">PRICE CONTRIBUTION</div>
+                            <div class="price-value" id="price-${index}">$0.00</div>
+                        </div>
+
+                        <div class="last-updated">
+                            <div class="update-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </div>
+                            <div class="update-details">
+                                <p>LAST UPDATED BY</p>
+                                <span id="updater-${index}">NONE</span>
+                            </div>
+                        </div>
+
+                        <button class="bid-btn" onclick="placeBid(${index})">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            BID $10
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+                uiInitialized = true;
+            }
+
+            // 2. Update the text content of existing elements
             rooms.forEach((room, index) => {
-                const card = document.createElement('div');
-                card.className = 'room-card';
-                card.innerHTML = `
-                    <div class="room-icon">
-                        ${roomIcons[room.id]}
-                    </div>
-                    <div class="room-name">${room.name}</div>
+                const priceEl = document.getElementById(`price-${index}`);
+                const updaterEl = document.getElementById(`updater-${index}`);
+                
+                if (priceEl && updaterEl) {
+                    const newPriceStr = formatCurrency(room.price);
                     
-                    <div>
-                        <div class="price-label">PRICE CONTRIBUTION</div>
-                        <div class="price-value" id="price-${index}">${formatCurrency(room.price)}</div>
-                    </div>
-
-                    <div class="last-updated">
-                        <div class="update-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        </div>
-                        <div class="update-details">
-                            <p>LAST UPDATED BY</p>
-                            <span id="updater-${index}">${room.lastUpdatedBy}</span>
-                        </div>
-                    </div>
-
-                    <button class="bid-btn" onclick="placeBid(${index})">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        BID $10
-                    </button>
-                `;
-                container.appendChild(card);
+                    // Only animate if the price actually changed
+                    if (priceEl.textContent !== newPriceStr && priceEl.textContent !== '$0.00') {
+                        priceEl.classList.remove('highlight');
+                        void priceEl.offsetWidth; // trigger reflow
+                        priceEl.classList.add('highlight');
+                        setTimeout(() => priceEl.classList.remove('highlight'), 400);
+                    }
+                    
+                    priceEl.textContent = newPriceStr;
+                    updaterEl.textContent = room.lastUpdatedBy;
+                }
             });
 
             updateSystemIntegrity();
@@ -639,59 +694,40 @@
             const bidAmount = 10;
             const activeBidder = document.getElementById('bidder-select').value;
             
+            // Create a temporary copy to calculate new prices
+            let newRooms = JSON.parse(JSON.stringify(rooms));
+            
             // Increase the chosen room
-            rooms[targetIndex].price += bidAmount;
-            rooms[targetIndex].lastUpdatedBy = activeBidder;
+            newRooms[targetIndex].price += bidAmount;
+            newRooms[targetIndex].lastUpdatedBy = activeBidder;
 
             // Decrease others
-            const otherRoomsCount = rooms.length - 1;
+            const otherRoomsCount = newRooms.length - 1;
             const decreaseAmount = bidAmount / otherRoomsCount;
 
-            rooms.forEach((room, idx) => {
+            newRooms.forEach((room, idx) => {
                 if (idx !== targetIndex) {
                     room.price -= decreaseAmount;
                 }
             });
 
-            // Re-render and then animate
-            renderRooms();
-            animatePriceChanges(targetIndex);
-        }
-
-        function animatePriceChanges(targetIndex) {
-            rooms.forEach((_, idx) => {
-                const el = document.getElementById(`price-${idx}`);
-                if (el) {
-                    // Force reflow
-                    void el.offsetWidth;
-                    el.classList.add('highlight');
-                    
-                    if (idx !== targetIndex) {
-                        el.style.color = '#ef4444'; // Red for down
-                    }
-                    
-                    setTimeout(() => {
-                        el.classList.remove('highlight');
-                        el.style.color = 'var(--header-bg)';
-                    }, 400);
-                }
-            });
+            // Save to Firebase (this will automatically trigger the 'value' listener for everyone)
+            if (db) {
+                db.ref('rooms').set(newRooms);
+            } else {
+                // Fallback for local testing if Firebase is missing
+                rooms = newRooms;
+                renderRooms();
+            }
         }
 
         function resetSplits() {
-            rooms = JSON.parse(JSON.stringify(INITIAL_ROOMS));
-            renderRooms();
-            
-            // Animate all
-            rooms.forEach((_, idx) => {
-                const el = document.getElementById(`price-${idx}`);
-                if (el) {
-                    el.classList.add('highlight');
-                    setTimeout(() => {
-                        el.classList.remove('highlight');
-                    }, 400);
-                }
-            });
+            if (db) {
+                db.ref('rooms').set(INITIAL_ROOMS);
+            } else {
+                rooms = JSON.parse(JSON.stringify(INITIAL_ROOMS));
+                renderRooms();
+            }
         }
 
         function updateSystemIntegrity() {
@@ -701,8 +737,24 @@
 
         document.getElementById('reset-btn').addEventListener('click', resetSplits);
 
-        // Initial render
-        renderRooms();
+        // ==========================================
+        // 2. FIREBASE REAL-TIME SYNC
+        // ==========================================
+        if (db) {
+            db.ref('rooms').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    rooms = data;
+                    renderRooms();
+                } else {
+                    // First time setup, database is empty
+                    db.ref('rooms').set(INITIAL_ROOMS);
+                }
+            });
+        } else {
+            // Initial render without Firebase
+            renderRooms();
+        }
     </script>
 </body>
 </html>
