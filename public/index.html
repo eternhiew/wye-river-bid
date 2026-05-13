@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wye-River Roadtrip | Consensus Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7fb;
+            --header-bg: #141629;
+            --text-main: #141629;
+            --text-muted: #6b7280;
+            --primary: #5a67d8;
+            --primary-light: #ebf4ff;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --card-bg: #ffffff;
+            --border-radius: 24px;
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Outfit', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .app-header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pulse-icon {
+            color: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .active-bidder label, .lease-total label {
+            display: block;
+            font-size: 0.75rem;
+            color: #a0aec0;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .active-bidder select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+            appearance: none;
+            padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+
+        .active-bidder select:focus {
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .active-bidder select option {
+            background-color: var(--header-bg);
+            color: white;
+        }
+
+        .lease-total {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .total-amount {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .app-main {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .market-floor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+        }
+
+        .market-floor-header h2 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .market-floor-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        .market-floor-header p strong {
+            color: var(--primary);
+        }
+
+        .reset-btn {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-sans);
+        }
+
+        .reset-btn:hover {
+            color: var(--text-main);
+            border-color: #d1d5db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .room-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .room-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: rgba(90, 103, 216, 0.2);
+        }
+
+        .room-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--bg-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .room-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            min-height: 3.5rem;
+            line-height: 1.4;
+        }
+
+        .price-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-value {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--header-bg);
+            display: flex;
+            align-items: center;
+            transition: color 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: left center;
+        }
+
+        .price-value.highlight {
+            color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .last-updated {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-color);
+            border-radius: 14px;
+            margin-bottom: 2rem;
+        }
+
+        .update-icon {
+            color: var(--text-muted);
+            background: white;
+            padding: 0.4rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+        }
+
+        .update-details p {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .update-details span {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .bid-btn {
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            padding: 1.25rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: auto;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(20, 22, 41, 0.2);
+        }
+
+        .bid-btn:hover {
+            background: #1e2340;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(20, 22, 41, 0.3);
+        }
+
+        .bid-btn:active {
+            transform: translateY(0);
+        }
+
+        .bid-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .bid-btn svg {
+            transition: transform 0.2s ease;
+        }
+
+        .bid-btn:hover:not(:disabled) svg {
+            transform: scale(1.2);
+        }
+
+        .system-integrity {
+            background: white;
+            border-radius: 100px;
+            padding: 1.5rem 3.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            margin-bottom: 4rem;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .integrity-status {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .status-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--success-light);
+            color: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.1);
+        }
+
+        .status-text h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-text p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .integrity-stats {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .stat-box {
+            text-align: right;
+        }
+
+        .stat-box label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .stat-value.target {
+            color: var(--primary);
+        }
+
+        /* ── History panel ─────────────────────────────────────────────────── */
+        .history-panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            margin-bottom: 4rem;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .history-panel h3 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .history-panel h3 svg {
+            color: var(--primary);
+        }
+
+        .history-empty {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-color);
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .history-item .hi-bidder {
+            font-weight: 700;
+            min-width: 70px;
+        }
+
+        .history-item .hi-arrow {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .history-item .hi-room {
+            flex: 1;
+            color: var(--text-muted);
+        }
+
+        .history-item .hi-amount {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .history-item .hi-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* ── Toast notification ────────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--header-bg);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-note::before, .footer-note::after {
+            content: '';
+            height: 1px;
+            width: 40px;
+            background: currentColor;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 900px) {
+            .system-integrity {
+                flex-direction: column;
+                border-radius: 32px;
+                gap: 2.5rem;
+                padding: 2.5rem;
+                text-align: center;
+            }
+            .integrity-status {
+                flex-direction: column;
+            }
+            .integrity-stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .stat-box {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: flex-start;
+            }
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .market-floor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>WYE-RIVER ROADTRIP <span class="pulse-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </span></h1>
+                    <p>CONSENSUS ENGINE</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="active-bidder">
+                    <label>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        ACTIVE BIDDER
+                    </label>
+                    <select id="bidder-select">
+                        <!-- Populated from /api/state -->
+                    </select>
+                </div>
+                <div class="lease-total">
+                    <label>LEASE TOTAL</label>
+                    <div class="total-amount">$744.00</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="market-floor-header">
+            <div>
+                <h2>Market Floor</h2>
+                <p>Bids adjust dynamically to maintain a <strong>$744.00</strong> total.</p>
+            </div>
+            <button id="reset-btn" class="reset-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                RESET SPLITS
+            </button>
+        </div>
+
+        <div class="room-cards" id="room-cards">
+            <!-- Rendered via JS -->
+        </div>
+
+        <div class="system-integrity">
+            <div class="integrity-status">
+                <div class="status-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="status-text">
+                    <h3>SYSTEM INTEGRITY</h3>
+                    <p>Zero-sum consensus is perfectly balanced.</p>
+                </div>
+            </div>
+            <div class="integrity-stats">
+                <div class="stat-box">
+                    <label>CURRENT SUM</label>
+                    <div class="stat-value" id="current-sum">$744.00</div>
+                </div>
+                <div class="stat-box">
+                    <label>TARGET BUDGET</label>
+                    <div class="stat-value target">$744.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bid History -->
+        <div class="history-panel">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Bid History
+            </h3>
+            <div id="history-list" class="history-list">
+                <div class="history-empty">No bids placed yet.</div>
+            </div>
+        </div>
+
+        <div class="footer-note">CONSENSUS LOGIC ONLINE</div>
+    </main>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const TOTAL_BUDGET = 744.00;
+
+        const roomIcons = {
+            main:   `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+            second: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+            third:  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
+        };
+
+        // ── State ─────────────────────────────────────────────────────────────
+        let rooms   = [];
+        let bidding = false; // prevent double-clicks during in-flight requests
+
+        // ── Toast ─────────────────────────────────────────────────────────────
+        let toastTimer = null;
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            // Force reflow so transition fires even on rapid calls
+            void el.offsetWidth;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+        }
+
+        // ── Formatting ────────────────────────────────────────────────────────
+        function formatCurrency(amount) {
+            return '$' + Number(amount).toFixed(2);
+        }
+
+        function formatTimestamp(iso) {
+            const d = new Date(iso);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+                   ' ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        // ── Render rooms ──────────────────────────────────────────────────────
+        function renderRooms() {
+            const container = document.getElementById('room-cards');
+            container.innerHTML = '';
+
+            rooms.forEach((room, index) => {
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                card.innerHTML = `
+                    <div class="room-icon">
+                        ${roomIcons[room.id] || roomIcons.main}
+                    </div>
+                    <div class="room-name">${room.name}</div>
+
+                    <div>
+                        <div class="price-label">PRICE CONTRIBUTION</div>
+                        <div class="price-value" id="price-${index}">${formatCurrency(room.price)}</div>
+                    </div>
+
+                    <div class="last-updated">
+                        <div class="update-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="update-details">
+                            <p>LAST UPDATED BY</p>
+                            <span id="updater-${index}">${room.lastUpdatedBy}</span>
+                        </div>
+                    </div>
+
+                    <button class="bid-btn" id="bid-btn-${index}" onclick="placeBid('${room.id}', ${index})">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        BID $10
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+
+            updateSystemIntegrity();
+        }
+
+        // ── Render history ────────────────────────────────────────────────────
+        function renderHistory(history) {
+            const container = document.getElementById('history-list');
+            if (!history || history.length === 0) {
+                container.innerHTML = '<div class="history-empty">No bids placed yet.</div>';
+                return;
+            }
+            container.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <span class="hi-bidder">${h.bidderName}</span>
+                    <span class="hi-arrow">+$${Number(h.amount).toFixed(2)}</span>
+                    <span class="hi-room">${h.roomName}</span>
+                    <span class="hi-time">${formatTimestamp(h.timestamp)}</span>
+                </div>
+            `).join('');
+        }
+
+        // ── System integrity ──────────────────────────────────────────────────
+        function updateSystemIntegrity() {
+            const currentSum = rooms.reduce((sum, room) => sum + Number(room.price), 0);
+            document.getElementById('current-sum').textContent = formatCurrency(currentSum);
+        }
+
+        // ── Animations ────────────────────────────────────────────────────────
+        function animatePriceChanges(targetIndex) {
+            rooms.forEach((_, idx) => {
+                const el = document.getElementById(`price-${idx}`);
+                if (!el) return;
+                void el.offsetWidth;
+                el.classList.add('highlight');
+                if (idx !== targetIndex) {
+                    el.style.color = '#ef4444';
+                }
+                setTimeout(() => {
+                    el.classList.remove('highlight');
+                    el.style.color = 'var(--header-bg)';
+                }, 400);
+            });
+        }
+
+        function setBiddingLock(locked) {
+            bidding = locked;
+            document.querySelectorAll('.bid-btn').forEach(btn => {
+                btn.disabled = locked;
+            });
+        }
+
+        // ── API calls ─────────────────────────────────────────────────────────
+
+        async function loadState() {
+            try {
+                const res  = await fetch('/api/state');
+                const data = await res.json();
+
+                rooms = data.rooms;
+
+                // Populate bidder dropdown
+                const select = document.getElementById('bidder-select');
+                select.innerHTML = data.bidders
+                    .map(name => `<option value="${name}">${name}</option>`)
+                    .join('');
+
+                renderRooms();
+            } catch (err) {
+                showToast('Failed to load state from server.', true);
+                console.error('loadState error:', err);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const res  = await fetch('/api/history');
+                const data = await res.json();
+                renderHistory(data.history);
+            } catch (err) {
+                console.error('loadHistory error:', err);
+            }
+        }
+
+        async function placeBid(roomId, targetIndex) {
+            if (bidding) return;
+            setBiddingLock(true);
+
+            const bidAmount    = 10;
+            const activeBidder = document.getElementById('bidder-select').value;
+
+            try {
+                const res  = await fetch('/api/bid', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ roomId, bidderName: activeBidder, amount: bidAmount }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Bid failed');
+                }
+
+                const data = await res.json();
+                rooms = data.rooms;
+                renderRooms();
+                animatePriceChanges(targetIndex);
+                loadHistory();
+                showToast(`${activeBidder} bid $${bidAmount} on room ${targetIndex + 1}`);
+            } catch (err) {
+                showToast(err.message || 'Failed to place bid.', true);
+                console.error('placeBid error:', err);
+            } finally {
+                setBiddingLock(false);
+            }
+        }
+
+        async function resetSplits() {
+            if (bidding) return;
+            setBiddingLock(true);
+
+            try {
+                const res  = await fetch('/api/reset', { method: 'POST' });
+                const data = await res.json();
+                rooms = data.rooms;
+                renderRooms();
+
+                // Animate all cards
+                rooms.forEach((_, idx) => {
+                    const el = document.getElementById(`price-${idx}`);
+                    if (el) {
+                        el.classList.add('highlight');
+                        setTimeout(() => el.classList.remove('highlight'), 400);
+                    }
+                });
+
+                showToast('Splits reset to equal shares.');
+            } catch (err) {
+                showToast('Failed to reset splits.', true);
+                console.error('resetSplits error:', err);
+            } finally {
+                setBiddingLock(false);
+            }
+        }
+
+        // ── Boot ──────────────────────────────────────────────────────────────
+        document.getElementById('reset-btn').addEventListener('click', resetSplits);
+
+        loadState();
+        loadHistory();
+    </script>
+</body>
+</html>
